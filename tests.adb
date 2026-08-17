@@ -7,8 +7,8 @@ with SURF; use SURF;
 
 procedure Tests is
    Img_Empty    : Image (1 .. 0, 1 .. 0);
-   Img_Small    : Image (1 .. 5, 1 .. 5) := (others => (others => 1.0));
-   Img_Med      : Image (1 .. 20, 1 .. 20) := (others => (others => 255.0));
+   Img_Small    : constant Image (1 .. 5, 1 .. 5) := (others => (others => 1.0));
+   Img_Med      : constant Image (1 .. 20, 1 .. 20) := (others => (others => 255.0));
    
    I_Img_Small  : Integral_Image (1 .. 5, 1 .. 5);
    
@@ -34,6 +34,7 @@ begin
    begin
       declare
          I_Img_Empty : Integral_Image := Compute_Integral_Image (Img_Empty);
+         pragma Unreferenced (I_Img_Empty);
       begin
          Assert (False, "Expected Image_Error not raised");
       end;
@@ -59,7 +60,7 @@ begin
    Put_Line ("TEST 5 - Hessian Determinant Approximation");
    Put_Line ("  5.1 Assert mathematical output responds predictably on flat regions");
    declare
-      Det : Real := Determinant_Of_Hessian (I_Img_Small, 3, 3, 9);
+      Det : constant Real := Determinant_Of_Hessian (I_Img_Small, 3, 3, 9);
    begin
       -- Flat image should result in ~0 determinant for derivatives
       Assert (Det = 0.0, "Hessian determinant on flat image failed");
