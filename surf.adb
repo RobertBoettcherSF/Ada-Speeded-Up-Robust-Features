@@ -1,14 +1,12 @@
 -- surf.adb
 -- Implementation of the SURF algorithm, Fast-Hessian detector, and descriptors.
 
-with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
-
 package body SURF is
 
    -- Compute the Integral Image for fast box filter calculations
    -- I(x,y) = Img(x,y) + I(x-1,y) + I(x,y-1) - I(x-1,y-1)
    function Compute_Integral_Image (Img : Image) return Integral_Image is
-      Result : Integral_Image (Img'Range (1), Img'Range (2));
+      Result : Integral_Image (Img'Range (1), Img'Range (2)) := (others => (others => 0.0));
       Sum    : Real;
    begin
       if Img'Length (1) = 0 or Img'Length (2) = 0 then
@@ -34,11 +32,11 @@ package body SURF is
       R_Top, R_Bottom, C_Left, C_Right : Integer;
       A, B, C, D : Real := 0.0;
    begin
-      -- Edge case handling: Clamp to image boundaries
-      R_Top    := Integer'Max (I_Img'First (2) - 1, Y - 1);
-      R_Bottom := Integer'Min (I_Img'Last (2), Y + H - 1);
-      C_Left   := Integer'Max (I_Img'First (1) - 1, X - 1);
-      C_Right  := Integer'Min (I_Img'Last (1), X + W - 1);
+      -- Edge case handling: Clamp to image boundaries (both minimum and maximum limits)
+      R_Top    := Integer'Min (Integer'Max (I_Img'First (2) - 1, Y - 1), I_Img'Last (2));
+      R_Bottom := Integer'Min (Integer'Max (I_Img'First (2) - 1, Y + H - 1), I_Img'Last (2));
+      C_Left   := Integer'Min (Integer'Max (I_Img'First (1) - 1, X - 1), I_Img'Last (1));
+      C_Right  := Integer'Min (Integer'Max (I_Img'First (1) - 1, X + W - 1), I_Img'Last (1));
 
       if R_Bottom < I_Img'First (2) or C_Right < I_Img'First (1) then
          return 0.0;
@@ -60,7 +58,7 @@ package body SURF is
 
    -- Approximate the Determinant of the Hessian matrix using box filters
    function Determinant_Of_Hessian (I_Img : Integral_Image; X, Y, Filter_Size : Integer) return Real is
-      Lobe  : Integer := Filter_Size / 3;
+      Lobe   : constant Integer := Filter_Size / 3;
       Dxx, Dyy, Dxy : Real;
       Weight : constant Real := 0.81; -- 0.9^2 as per SURF paper
    begin
@@ -81,6 +79,7 @@ package body SURF is
 
    -- Assign orientation using Haar wavelet responses
    function Assign_Orientation (X, Y : Integer; Variant : SURF_Variant) return Real is
+      pragma Unreferenced (X, Y);
    begin
       -- U-SURF (Upright SURF) skips orientation assignment to save time
       if Variant = U_SURF or Variant = U_SURF_128 then
@@ -92,6 +91,7 @@ package body SURF is
 
    -- Internal procedure to build 64-dimensional descriptor
    procedure Build_Descriptor_64 (Pt : Keypoint; Desc : out Descriptor_64) is
+      pragma Unreferenced (Pt);
       Base_Index : Integer;
    begin
       for I in 0 .. 15 loop
@@ -106,6 +106,7 @@ package body SURF is
 
    -- Internal procedure to build 128-dimensional descriptor
    procedure Build_Descriptor_128 (Pt : Keypoint; Desc : out Descriptor_128) is
+      pragma Unreferenced (Pt);
       Base_Index : Integer;
    begin
       for I in 0 .. 15 loop
@@ -130,7 +131,7 @@ package body SURF is
       Count     : out Natural;
       Threshold : in Real := 1000.0)
    is
-      I_Img : Integral_Image := Compute_Integral_Image (Img);
+      I_Img : constant Integral_Image := Compute_Integral_Image (Img);
       Det   : Real;
       Idx   : Natural := 0;
    begin
@@ -168,7 +169,7 @@ package body SURF is
       Count     : out Natural;
       Threshold : in Real := 1000.0)
    is
-      I_Img : Integral_Image := Compute_Integral_Image (Img);
+      I_Img : constant Integral_Image := Compute_Integral_Image (Img);
       Det   : Real;
       Idx   : Natural := 0;
    begin
