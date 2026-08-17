@@ -60,9 +60,10 @@ begin
    Put_Line ("TEST 5 - Hessian Determinant Approximation");
    Put_Line ("  5.1 Assert mathematical output responds predictably on flat regions");
    declare
-      Det : constant Real := Determinant_Of_Hessian (I_Img_Small, 3, 3, 9);
+      I_Img_Med : constant Integral_Image := Compute_Integral_Image (Img_Med);
+      Det       : constant Real := Determinant_Of_Hessian (I_Img_Med, 10, 10, 9);
    begin
-      -- Flat image should result in ~0 determinant for derivatives
+      -- Flat image should result in 0.0 determinant for second derivatives
       Assert (Det = 0.0, "Hessian determinant on flat image failed");
       Put_Line ("      PASS");
    end;
@@ -70,7 +71,7 @@ begin
    -- TEST 6
    Put_Line ("TEST 6 - U-SURF Upright Orientation Bypass");
    Put_Line ("  6.1 Assert U-SURF bypasses Haar Wavelet orientation (returns 0.0)");
-   Extract_Features_64 (Img_Med, U_SURF, Feats_64, Count, 0.0);
+   Extract_Features_64 (Img_Med, U_SURF, Feats_64, Count, -1.0);
    if Count > 0 then
       Assert (Feats_64(1).Pt.Orientation = 0.0, "U-SURF orientation /= 0.0");
    end if;
@@ -79,7 +80,7 @@ begin
    -- TEST 7
    Put_Line ("TEST 7 - Standard SURF Orientation Check");
    Put_Line ("  7.1 Assert Standard SURF applies Haar Wavelets for orientation");
-   Extract_Features_64 (Img_Med, Standard_SURF, Feats_64, Count, 0.0);
+   Extract_Features_64 (Img_Med, Standard_SURF, Feats_64, Count, -1.0);
    if Count > 0 then
       Assert (Feats_64(1).Pt.Orientation /= 0.0, "Std SURF orientation = 0.0");
    end if;
@@ -96,7 +97,7 @@ begin
    Put_Line ("TEST 9 - Variant Guard 64-Dim");
    Put_Line ("  9.1 Assert 64-dim method rejects 128-dim variants");
    begin
-      Extract_Features_64 (Img_Med, SURF_128, Feats_64, Count, 0.0);
+      Extract_Features_64 (Img_Med, SURF_128, Feats_64, Count, -1.0);
       Assert (False, "Constraint_Error missing for variant mismatch");
    exception
       when Constraint_Error => Put_Line ("      PASS");
@@ -106,7 +107,7 @@ begin
    Put_Line ("TEST 10 - Variant Guard 128-Dim");
    Put_Line ("  10.1 Assert 128-dim method rejects 64-dim variants");
    begin
-      Extract_Features_128 (Img_Med, Standard_SURF, Feats_128, Count, 0.0);
+      Extract_Features_128 (Img_Med, Standard_SURF, Feats_128, Count, -1.0);
       Assert (False, "Constraint_Error missing for variant mismatch");
    exception
       when Constraint_Error => Put_Line ("      PASS");
@@ -115,7 +116,7 @@ begin
    -- TEST 11
    Put_Line ("TEST 11 - 128-Dimensional Extraction");
    Put_Line ("  11.1 Assert 128-dim vector correctly initializes memory");
-   Extract_Features_128 (Img_Med, SURF_128, Feats_128, Count, 0.0);
+   Extract_Features_128 (Img_Med, SURF_128, Feats_128, Count, -1.0);
    if Count > 0 then
       Assert (Feats_128(1).Desc'Length = 128, "128 Descriptor bounds fail");
    end if;
@@ -124,7 +125,7 @@ begin
    -- TEST 12
    Put_Line ("TEST 12 - U-SURF-128 Combination Logic");
    Put_Line ("  12.1 Assert U-SURF-128 is both upright (0.0 rad) AND 128-dim");
-   Extract_Features_128 (Img_Med, U_SURF_128, Feats_128, Count, 0.0);
+   Extract_Features_128 (Img_Med, U_SURF_128, Feats_128, Count, -1.0);
    if Count > 0 then
       Assert (Feats_128(1).Pt.Orientation = 0.0, "U-SURF-128 orientation fail");
       Assert (Feats_128(1).Desc(128) /= -1.0, "U-SURF-128 desc fail");
@@ -134,7 +135,7 @@ begin
    -- TEST 13
    Put_Line ("TEST 13 - Laplacian Trace Sign");
    Put_Line ("  13.1 Assert Laplacian sign is strictly +1 or -1 for fast matching");
-   Extract_Features_64 (Img_Med, Standard_SURF, Feats_64, Count, 0.0);
+   Extract_Features_64 (Img_Med, Standard_SURF, Feats_64, Count, -1.0);
    if Count > 0 then
       Assert (Feats_64(1).Pt.Laplacian = 1 or Feats_64(1).Pt.Laplacian = -1, 
               "Laplacian sign invalid");
