@@ -1,20 +1,14 @@
 .PHONY: all test clean
 
-GNAT = gnatmake
-OBJ_DIR = obj
-BIN_DIR = bin
+# Using semicolons ensures that even if a line break is lost during copy-paste, 
+# the commands will execute sequentially and correctly.
 
-all: $(BIN_DIR)/main$(BIN_DIR)/tests
+all:
+	mkdir -p obj bin; gnatmake -P surf.gpr
 
-$(BIN_DIR)/main: main.adb surf.ads surf.adb
-	mkdir -p $(OBJ_DIR) $(BIN_DIR)$(GNAT) -P surf.gpr
-
-$(BIN_DIR)/tests: tests.adb surf.ads surf.adb
-	mkdir -p $(OBJ_DIR) $(BIN_DIR)$(GNAT) -P surf.gpr
-
-test: $(BIN_DIR)/tests
+test: all
 	@echo "Running tests..."
-	@./$(BIN_DIR)/tests
+	./bin/tests
 
 clean:
-	rm -rf $(OBJ_DIR)$(BIN_DIR)
+	rm -rf obj bin
