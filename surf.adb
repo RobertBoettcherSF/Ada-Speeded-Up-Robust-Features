@@ -58,17 +58,24 @@ package body SURF is
 
    -- Approximate the Determinant of the Hessian matrix using box filters
    function Determinant_Of_Hessian (I_Img : Integral_Image; X, Y, Filter_Size : Integer) return Real is
-      Lobe   : constant Integer := Filter_Size / 3;
+      Lobe    : constant Integer := Filter_Size / 3;
       Dxx, Dyy, Dxy : Real;
-      Weight : constant Real := 0.81; -- 0.9^2 as per SURF paper
+      Weight  : constant Real := 0.81; -- 0.9^2 as per SURF paper
+
+      Outer_W : constant Integer := 3 * Lobe;
+      Outer_H : constant Integer := 2 * Lobe - 1;
+      Inner_W : constant Integer := Lobe;
+      Inner_H : constant Integer := 2 * Lobe - 1;
    begin
-      -- Approximations using box filters
-      Dxx := Box_Area_Sum (I_Img, X - Lobe + 1, Y - Lobe / 2, 2 * Lobe - 1, Lobe)
-           - 3.0 * Box_Area_Sum (I_Img, X - Lobe / 2 + 1, Y - Lobe / 2, Lobe - 1, Lobe);
-           
-      Dyy := Box_Area_Sum (I_Img, X - Lobe / 2, Y - Lobe + 1, Lobe, 2 * Lobe - 1)
-           - 3.0 * Box_Area_Sum (I_Img, X - Lobe / 2, Y - Lobe / 2 + 1, Lobe, Lobe - 1);
-           
+      -- Box filter approximation for Dxx (horizontal second derivative)
+      Dxx := Box_Area_Sum (I_Img, X - (Outer_W - 1) / 2, Y - (Outer_H - 1) / 2, Outer_W, Outer_H)
+           - 3.0 * Box_Area_Sum (I_Img, X - (Inner_W - 1) / 2, Y - (Inner_H - 1) / 2, Inner_W, Inner_H);
+
+      -- Box filter approximation for Dyy (vertical second derivative)
+      Dyy := Box_Area_Sum (I_Img, X - (Outer_H - 1) / 2, Y - (Outer_W - 1) / 2, Outer_H, Outer_W)
+           - 3.0 * Box_Area_Sum (I_Img, X - (Inner_H - 1) / 2, Y - (Inner_W - 1) / 2, Outer_H, Inner_W);
+
+      -- Box filter approximation for Dxy (cross derivative)
       Dxy := Box_Area_Sum (I_Img, X - Lobe, Y - Lobe, Lobe, Lobe)
            + Box_Area_Sum (I_Img, X + 1, Y + 1, Lobe, Lobe)
            - Box_Area_Sum (I_Img, X - Lobe, Y + 1, Lobe, Lobe)
